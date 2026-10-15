@@ -1,0 +1,61 @@
+# NarxHematox.jl
+
+Julia implementation of NARX neural networks with transfer learning for predicting chemotherapy-induced thrombotoxicity.
+
+This is a port of the Python repository [NARX-Hematox](https://github.com/mariesteinacker/NARX-Hematox), which accompanies the publication "Predicting chemotherapy-induced thrombotoxicity by NARX neural networks and transfer learning" by M. Steinacker, Y. Kheifetz and M. Scholz (preprint: https://doi.org/10.1101/2024.08.06.606816).
+
+## Installation
+
+```julia
+using Pkg
+Pkg.add(url = "https://github.com/tuyentruongtt/NarxHematox.jl")
+```
+
+## Usage
+
+The notebook [`examples/NarxShowcase.ipynb`](examples/NarxShowcase.ipynb) demonstrates how individual patient dynamics are learned with NARX neural networks, and how transfer learning via a semi-mechanistic model is used. This is shown with a simulated patient time series generated with the Friberg model (Friberg et al., JCO. 20, 4713–4721 (2002),
+https://doi.org/10.1200/jco.2002.02.140) with added noise and cumulative toxicity.
+
+To run it yourself:
+
+1. Clone this repository.
+2. In Julia, activate and install the example environment:
+   ```julia
+   using Pkg
+   Pkg.activate("examples")
+   Pkg.instantiate()
+   ```
+3. Open `examples/NarxShowcase.ipynb` with a Julia kernel (e.g. in VS Code or Jupyter via IJulia) and run all cells.
+
+## File description
+
+- `src/friberg.jl`: Friberg model, its calibration loss and helpers.
+- `src/narx.jl`: ARX-RNN (with a TensorFlow-compatible GRU cell) and ARX-FNN models.
+- `src/utils.jl`: losses, regularization, pruning, early stopping and model builders.
+- `src/weights.jl`: loading of the original Keras `.h5` weights.
+- `src/fit.jl`: training loop.
+- `examples/training.jl`: Friberg calibration and the three-phase NARX training for one patient.
+- `examples/NarxShowcase.ipynb`: demonstration notebook.
+- `data/therapies_all.csv`: generated treatment scenarios for transfer learning, as used in Steinacker et al., Heliyon. 9, e17890 (2023), https://doi.org/10.1016/j.heliyon.2023.e17890.
+- `data/index_weights_GRU.h5`, `data/index_weights_FNN.h5`: starting weights for transfer learning, from the original Python repository.
+- `test/runtests.jl`: tests, including checks against the Python implementation.
+
+## Differences from the Python version
+
+- The Friberg model is solved with `Tsit5` (OrdinaryDiffEq.jl) instead of `LSODA`; results agree to about four digits.
+- Friberg calibration uses Nelder-Mead from Optim.jl instead of SciPy.
+- Random numbers differ, so simulated noise and training results differ slightly.
+- Dropout and GRU activations other than sigmoid are not implemented; the original showcase does not use them.
+
+## Citation
+
+If you use this package, please cite the original publication (see above).
+
+## License
+
+AGPL-3.0, as the original repository. See [`LICENSE`](LICENSE).
+
+## AI assistance
+
+This Julia port was developed with the help of Claude Opus 5.5 (Anthropic), an AI assistant, in October 2026. Claude assisted with reviewing the translation from the Python code to Julia, fixing errors, and writing tests.
+All code was finally reviewed, run and tested by the author, who takes full responsibility for its content.

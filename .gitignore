@@ -1,0 +1,4 @@
+/Manifest.toml
+/test/Manifest.toml
+.ipynb_checkpoints/
+.DS_Store
