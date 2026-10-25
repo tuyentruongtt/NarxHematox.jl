@@ -8,7 +8,7 @@ This is a port of the Python repository [NARX-Hematox](https://github.com/maries
 
 ```julia
 using Pkg
-Pkg.add(url = "https://github.com/tuyentruongtt/NarxHematox.jl")
+Pkg.add("NarxHematox")
 ```
 
 ## Usage
@@ -49,7 +49,7 @@ To run it yourself:
 
 ## Citation
 
-If you use this package, please cite the original publication (see above).
+If you use this package, please cite the original publication (see above) and this software: https://doi.org/10.5281/zenodo.23498911.
 
 ## License
 
