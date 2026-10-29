@@ -111,3 +111,19 @@ end
     @test isfinite(l_nan)
     @test l_nan ≈ l_drop
 end
+
+@testset "Adam beta1" begin
+    hp = Dict(:units => 4, :lag => 3, :stddev => 0.0, :activation => "sigmoid",
+              :out_act => "linear", :out_bias => false)
+    m0 = buildrnn(hp)
+    x = rand(Float32, 2, 10, 2)
+    y = rand(Float32, 1, 7, 2)
+    train(m; kw...) = fit_narx!(m, x, y, mse_missing; lr = 0.01, max_epochs = 30,
+                                early_stopping = EarlyStoppingAveraged(5, 50), kw...)
+    m_default, m_09, m_05 = deepcopy(m0), deepcopy(m0), deepcopy(m0)
+    train(m_default)
+    train(m_09; beta1 = 0.9)
+    train(m_05; beta1 = 0.5)
+    @test m_default(x) == m_09(x)
+    @test m_default(x) != m_05(x)
+end

@@ -20,7 +20,7 @@ function default_hp(celltype)
         :lp => 1e-4, :out_l2 => 0.01,
         :patience => 250, :max_epochs => 10200, :av_epochs => 20,
         :min_delta_fri => 1e-4, :min_delta_ptr => 1e-4, :min_delta_ft => 1e-5,
-        :lr => 0.01, :lr_ft => 0.001,
+        :lr => 0.01, :lr_ft => 0.001, :beta1_ft => 0.9,
     )
 end
 
@@ -157,12 +157,14 @@ function train_patient(t_arr, y_arr, cycle_arr, therapy; celltype = "GRU", train
 
     verbose && println("Phase 2: fine-tuning the output layer on the patient")
     model_ft = with_input_noise(model, hpx[:stddev])
-    fit_narx!(model_ft, x_ind, y_ind, smse_loss; lr = hp[:lr_ft], max_epochs = hp[:max_epochs],
+    fit_narx!(model_ft, x_ind, y_ind, smse_loss; lr = hp[:lr_ft], beta1 = hp[:beta1_ft],
+              max_epochs = hp[:max_epochs],
               early_stopping = early(hp[:min_delta_ptr]), reg = reg(hpx), prune = Prune(hpx[:delta]),
               frozen = celltype == "GRU" ? (:cell,) : (), verbose = verbose)
 
     verbose && println("Phase 3: fine-tuning the full model on the patient")
-    fit_narx!(model_ft, x_ind, y_ind, smse_loss; lr = hp[:lr_ft], max_epochs = hp[:max_epochs],
+    fit_narx!(model_ft, x_ind, y_ind, smse_loss; lr = hp[:lr_ft], beta1 = hp[:beta1_ft],
+              max_epochs = hp[:max_epochs],
               early_stopping = early(hp[:min_delta_ft]), reg = reg(hpx), prune = Prune(hpx[:delta]),
               verbose = verbose)
 

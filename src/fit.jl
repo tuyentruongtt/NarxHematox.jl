@@ -14,13 +14,14 @@ one full-batch step per epoch, as in the original Keras setup.
 - `reg(model)`: weight penalty added to the loss, e.g. `m -> regularization(m, 0.01)`.
 - `prune`: optional `Prune`, applied after each step.
 - `frozen`: names of fields not to train, e.g. `(:cell,)`.
+- `beta1`: Adam's first momentum coefficient (Keras default 0.9).
 
 Returns the vector of monitored losses.
 """
 function fit_narx!(model, x, y, loss; lr, max_epochs, early_stopping,
                    validation = nothing, reg = m -> 0f0, prune = nothing, frozen = (),
-                   decay_steps = 1800, decay_rate = 0.8, verbose = false)
-    opt = Flux.setup(Optimisers.Adam(lr, (0.9, 0.999), 1e-7), model)
+                   decay_steps = 1800, decay_rate = 0.8, beta1 = 0.9, verbose = false)
+    opt = Flux.setup(Optimisers.Adam(lr, (beta1, 0.999), 1e-7), model)
     for name in frozen
         Optimisers.freeze!(getproperty(opt, name))
     end

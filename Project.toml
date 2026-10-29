@@ -1,6 +1,6 @@
 name = "NarxHematox"
 uuid = "86f3add4-0856-48d1-910f-2f16b055d1b1"
-version = "0.1.1"
+version = "0.1.2"
 authors = "Tuyen Truong"
 
 [deps]
