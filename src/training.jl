@@ -1,6 +1,4 @@
-using NarxHematox
-using Flux
-using Optim
+import Optim
 
 const P0 = [0.316, 195.0, 2.0, 270.0]
 const LOWER_B = [0.05, 20.0, 1.0, 25.0]
@@ -54,48 +52,57 @@ function fnn_features(feat, xlag, ylag)
 end
 
 """
-    calibrate_friberg(t_arr, y_arr, therapy; train_cycles = 4)
+    calibrate_friberg(t_arr, y_arr, cycle_arr, therapy; train_cycles = 4)
 
-Fit the Friberg parameters to the observations of the first `train_cycles` 21-day cycles
+Fit the Friberg parameters to the observations with `cycle_arr .<= train_cycles`
 with Nelder-Mead and a population penalty, as in the original showcase.
+
+- `t_arr`: observation days, starting at day 0.
+- `y_arr`: platelet counts per litre.
+- `cycle_arr`: therapy cycle of each observation (the `CYCLE` column of the data).
+- `therapy`: `(therapy days, doses)`, one therapy per cycle.
+
+Returns the Friberg parameters `[gamma, MTT, slope, c0/10^9]`.
 """
-function calibrate_friberg(t_arr, y_arr, therapy; train_cycles = 4)
-    cycle_arr = div.(t_arr, 21) .+ 1
-    t_c = t_arr[cycle_arr .<= train_cycles]
-    y_arr_c = y_arr[cycle_arr .<= train_cycles]
-    therapies_c = (therapy[1][1:train_cycles], therapy[2][1:train_cycles])
+function calibrate_friberg(t_arr, y_arr, cycle_arr, therapy; train_cycles = 4)
+    mask = cycle_arr .<= train_cycles
+    t_c = t_arr[mask]
+    y_arr_c = y_arr[mask]
+    n_c = Int(maximum(cycle_arr[mask]))
+    therapies_c = (therapy[1][1:n_c], therapy[2][1:n_c])
     fit_loss(p) = poplog_fit_friberg_mse(clamp.(p, LOWER_B, UPPER_B), P0, y_arr_c, t_c, therapies_c)
-    res = optimize(fit_loss, P0, NelderMead(), Optim.Options(g_tol = 1e-2))
+    res = Optim.optimize(fit_loss, P0, Optim.NelderMead(), Optim.Options(g_tol = 1e-2))
     return clamp.(Optim.minimizer(res), LOWER_B, UPPER_B)
 end
 
 """
-    train_patient(t_arr, y_arr, therapy; celltype = "GRU", train_cycles = 4,
-                  hp = default_hp(celltype), verbose = true)
+    train_patient(t_arr, y_arr, cycle_arr, therapy; celltype = "GRU", train_cycles = 4,
+                  hp = default_hp(celltype), pc = calibrate_friberg(...), verbose = true)
 
 Calibrate the Friberg model and train an ARX-GRU or ARX-FNN for one patient,
 as in the original Python showcase.
 
 - `t_arr`: observation days, starting at day 0.
 - `y_arr`: platelet counts per litre.
-- `therapy`: `(therapy days, doses)`.
-- Observations after `train_cycles` 21-day cycles are used for testing only.
+- `cycle_arr`: therapy cycle of each observation (the `CYCLE` column of the data).
+  Observations with `cycle_arr .<= train_cycles` are used for training, the rest for testing.
+- `therapy`: `(therapy days, doses)`, one therapy per cycle.
 - `pc`: Friberg parameters; calibrated with `calibrate_friberg` if not given.
 
 Returns a named tuple with the daily time grid `t`, the predictions `y_fri` and `y_narx`,
 the Friberg parameters `pc`, the test errors `smse_fri` and `smse_narx`,
 the first test day `split_day`, and the trained `model`.
 """
-function train_patient(t_arr, y_arr, therapy; celltype = "GRU", train_cycles = 4,
+function train_patient(t_arr, y_arr, cycle_arr, therapy; celltype = "GRU", train_cycles = 4,
                        hp = default_hp(celltype),
-                       pc = calibrate_friberg(t_arr, y_arr, therapy; train_cycles = train_cycles),
+                       pc = calibrate_friberg(t_arr, y_arr, cycle_arr, therapy; train_cycles = train_cycles),
                        verbose = true)
     hpx = merge(hp, Dict(:stddev => hp[:stddev_ft], :delta => hp[:delta_ft]))
     t = collect(0:t_arr[end])
 
-    cycle_arr = div.(t_arr, 21) .+ 1
-    t_c = t_arr[cycle_arr .<= train_cycles]
-    y_arr_c = y_arr[cycle_arr .<= train_cycles]
+    mask = cycle_arr .<= train_cycles
+    t_c = t_arr[mask]
+    y_arr_c = y_arr[mask]
     y_fri = friberg(pc, t, therapy)
 
     scale_lo, scale_hi = celltype == "GRU" ? (-0.5, 0.5) : (-1.0, 1.5)
@@ -104,7 +111,7 @@ function train_patient(t_arr, y_arr, therapy; celltype = "GRU", train_cycles = 4
     from_scaled(s) = 10 .^ (log_lo .+ (s .- scale_lo) .* (log_hi - log_lo) ./ (scale_hi - scale_lo))
     stst = to_scaled(y_arr_c[1])
 
-    scenarios = vcat([therapy], read_scenarios(joinpath(pkgdir(NarxHematox), "data", "therapies_all.csv"), 7))
+    scenarios = vcat([therapy], read_scenarios(joinpath(@__DIR__, "..", "data", "therapies_all.csv"), 7))
     t_sc = collect(0:299)
     X_sc = zeros(8, 300)
     Y_sc = zeros(8, 300)

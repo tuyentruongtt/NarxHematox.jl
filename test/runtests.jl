@@ -91,3 +91,15 @@ end
     @test h[end] < h[1]
     @test all(0 .<= m.alpha .<= 1)
 end
+
+@testset "Calibration" begin
+    pat_p = [0.3222668, 217.17298364, 2.10676328, 276.05649911]
+    therapy = (collect(0:5) .* 14, ones(6))
+    t_arr = collect(0:2:82)
+    cycle_arr = div.(t_arr, 14) .+ 1
+    y_arr = friberg(pat_p, t_arr, therapy)
+    pc = calibrate_friberg(t_arr, y_arr, cycle_arr, therapy; train_cycles = 4)
+    @test length(pc) == 4
+    @test all(isfinite, pc)
+    @test all(NarxHematox.LOWER_B .<= pc .<= NarxHematox.UPPER_B)
+end

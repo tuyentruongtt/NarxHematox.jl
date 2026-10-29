@@ -1,11 +1,12 @@
 name = "NarxHematox"
 uuid = "86f3add4-0856-48d1-910f-2f16b055d1b1"
-version = "0.1.0"
+version = "0.1.1"
 authors = "Tuyen Truong"
 
 [deps]
 Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
 HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
+Optim = "429524aa-4258-5aef-a3af-852621145aeb"
 Optimisers = "3bd65402-5787-11e9-1adc-39752487f4e2"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
@@ -13,6 +14,7 @@ Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 [compat]
 Flux = "0.16.12"
 HDF5 = "0.17.4"
+Optim = "2.3.2"
 Optimisers = "0.4.9"
 OrdinaryDiffEq = "7.8.1"
 Zygote = "0.7.13"

@@ -27,6 +27,24 @@ To run it yourself:
    ```
 3. Open `examples/NarxShowcase.ipynb` with a Julia kernel (e.g. in VS Code or Jupyter via IJulia) and run all cells.
 
+## Usage with your own data
+
+`train_patient` calibrates the Friberg model and trains a NARX model for one patient. It needs:
+
+- `t_arr`: observation days as integers, starting at day 0.
+- `y_arr`: platelet counts per litre.
+- `cycle_arr`: the therapy cycle of each observation (the `CYCLE` column of the data). It is required, because cycle lengths differ between patients (for example 14 or 21 days).
+- `therapy`: `(therapy days, doses)`, one therapy per cycle.
+
+Observations with `cycle_arr .<= train_cycles` are used for training, the rest for testing.
+
+```julia
+using NarxHematox
+res = train_patient(t_arr, y_arr, cycle_arr, therapy; celltype = "GRU", train_cycles = 4)
+```
+
+`res.y_narx` and `res.y_fri` are the daily predictions, and `res.smse_narx` and `res.smse_fri` are the test errors.
+
 ## File description
 
 - `src/friberg.jl`: Friberg model, its calibration loss and helpers.
@@ -34,7 +52,7 @@ To run it yourself:
 - `src/utils.jl`: losses, regularization, pruning, early stopping and model builders.
 - `src/weights.jl`: loading of the original Keras `.h5` weights.
 - `src/fit.jl`: training loop.
-- `examples/training.jl`: Friberg calibration and the three-phase NARX training for one patient.
+- `src/training.jl`: Friberg calibration and the three-phase NARX training for one patient (`calibrate_friberg`, `train_patient`).
 - `examples/NarxShowcase.ipynb`: demonstration notebook.
 - `data/therapies_all.csv`: generated treatment scenarios for transfer learning, as used in Steinacker et al., Heliyon. 9, e17890 (2023), https://doi.org/10.1016/j.heliyon.2023.e17890.
 - `data/index_weights_GRU.h5`, `data/index_weights_FNN.h5`: starting weights for transfer learning, from the original Python repository.

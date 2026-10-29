@@ -1544,7 +1544,7 @@ uuid = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
 version = "1.1.4"
 
 [[deps.NarxHematox]]
-deps = ["Flux", "HDF5", "Optimisers", "OrdinaryDiffEq", "Zygote"]
+deps = ["Flux", "HDF5", "Optim", "Optimisers", "OrdinaryDiffEq", "Zygote"]
 path = ".."
 uuid = "86f3add4-0856-48d1-910f-2f16b055d1b1"
 version = "0.1.0"

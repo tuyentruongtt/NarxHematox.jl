@@ -7,6 +7,7 @@ include("narx.jl")
 include("utils.jl")
 include("weights.jl")
 include("fit.jl")
+include("training.jl")
 
 export solve_friberg, friberg, poplog_fit_friberg_mse, test_friberg
 export TFGRUCell, ARX_RNN_ES, ARX_net_lagged
@@ -17,5 +18,6 @@ export buildrnn, buildmlp, buildNARX
 export index_weights_path, load_weights!
 export fit_narx!
 export with_input_noise
+export default_hp, calibrate_friberg, train_patient
 
 end
