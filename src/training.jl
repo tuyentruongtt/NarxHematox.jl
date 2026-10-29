@@ -110,6 +110,7 @@ function train_patient(t_arr, y_arr, cycle_arr, therapy; celltype = "GRU", train
     to_scaled(y) = scale_lo .+ (log10.(y) .- log_lo) .* (scale_hi - scale_lo) ./ (log_hi - log_lo)
     from_scaled(s) = 10 .^ (log_lo .+ (s .- scale_lo) .* (log_hi - log_lo) ./ (scale_hi - scale_lo))
     stst = to_scaled(y_arr_c[1])
+    isfinite(stst) || (stst = to_scaled(pc[4] * 1e9))
 
     scenarios = vcat([therapy], read_scenarios(joinpath(@__DIR__, "..", "data", "therapies_all.csv"), 7))
     t_sc = collect(0:299)

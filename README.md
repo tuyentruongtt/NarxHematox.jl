@@ -64,6 +64,8 @@ res = train_patient(t_arr, y_arr, cycle_arr, therapy; celltype = "GRU", train_cy
 - Friberg calibration uses Nelder-Mead from Optim.jl instead of SciPy.
 - Random numbers differ, so simulated noise and training results differ slightly.
 - Dropout and GRU activations other than sigmoid are not implemented; the original showcase does not use them.
+- Missing observations (`NaN`) are skipped in the Friberg calibration loss. In Python they make the loss `NaN`, and the calibration silently returns the population parameters. With many missing observations, the calibrated parameters become less reliable.
+- If the first training observation is missing, the warm-up value is the calibrated baseline $c_0$. The Python notebook uses $c_0/10^9$ here, without the factor $10^9$.
 
 ## Citation
 

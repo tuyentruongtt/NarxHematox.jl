@@ -131,11 +131,11 @@ function poplog_fit_friberg_mse(params::AbstractVector{<:Real}, pop_params::Abst
 
     y_log = log10.(y_pred)
     y_arr_log = log10.(y_arr)
-    finite_mask = isfinite.(y_log)
+    finite_mask = isfinite.(y_log) .& isfinite.(y_arr_log)
 
     @assert length(y_log) == length(y_arr_log) "Length mismatch: y_pred=$(length(y_pred)), y_arr=$(length(y_arr))"
 
-    mse = sum((y_log[finite_mask] .- y_arr_log[finite_mask]) .^ 2) / length(y_arr)
+    mse = sum((y_log[finite_mask] .- y_arr_log[finite_mask]) .^ 2) / count(isfinite, y_arr_log)
     param_loss = ((log.(params) .- log.(pop_params)) .^ 2) ./ (5.0^2)
 
     return mse + sum(param_loss)

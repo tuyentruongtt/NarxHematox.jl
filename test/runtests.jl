@@ -102,4 +102,12 @@ end
     @test length(pc) == 4
     @test all(isfinite, pc)
     @test all(NarxHematox.LOWER_B .<= pc .<= NarxHematox.UPPER_B)
+        y_nan = copy(y_arr)
+    y_nan[5] = NaN
+    keep = [1:4; 6:length(t_arr)]
+    therapies_c = (therapy[1][1:4], therapy[2][1:4])
+    l_nan = poplog_fit_friberg_mse(pat_p, pat_p, y_nan, t_arr, therapies_c)
+    l_drop = poplog_fit_friberg_mse(pat_p, pat_p, y_arr[keep], t_arr[keep], therapies_c)
+    @test isfinite(l_nan)
+    @test l_nan ≈ l_drop
 end
