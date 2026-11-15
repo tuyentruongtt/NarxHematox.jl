@@ -173,8 +173,8 @@ function train_patient(t_arr, y_arr, cycle_arr, therapy; celltype = "GRU", train
     ylog_obs = fill(NaN, length(t))
     ylog_obs[t_arr .+ 1] = log10.(y_arr)
     test_idx = (split_day + 1):length(t)
-    smse_narx = step_mse_missing(ylog_obs[test_idx], log10.(y_narx)[test_idx], hp[:s])
-    smse_fri = step_mse_missing(ylog_obs[test_idx], log10.(y_fri)[test_idx], hp[:s])
+    smse_narx = isempty(test_idx) ? NaN : step_mse_missing(ylog_obs[test_idx], log10.(y_narx)[test_idx], hp[:s])
+    smse_fri = isempty(test_idx) ? NaN : step_mse_missing(ylog_obs[test_idx], log10.(y_fri)[test_idx], hp[:s])
 
     return (; t, y_fri, y_narx, pc, smse_fri, smse_narx, split_day, model = model_ft)
 end
